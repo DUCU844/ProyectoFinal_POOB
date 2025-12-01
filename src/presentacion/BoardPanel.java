@@ -106,7 +106,7 @@ public class BoardPanel extends JPanel {
             // Color según tipo de enemigo
             switch (enemy.getType()) {
                 case "TROLL":
-                    g.setColor(new Color(139, 69, 19)); // Café
+                    g.setColor(Color.green); // Troll es verde
                     break;
                 default:
                     g.setColor(Color.RED);
@@ -125,7 +125,7 @@ public class BoardPanel extends JPanel {
         int x = player.getColumn() * CELL_SIZE;
         int y = player.getRow() * CELL_SIZE;
         
-        // Color del helado (por ahora siempre blanco)
+        // Color del helado (por ahora blanco)
         g.setColor(Color.WHITE);
         
         // Dibujar helado como círculo

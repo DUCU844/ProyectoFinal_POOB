@@ -18,7 +18,7 @@ public class PantallaJuego extends JPanel {
     private JLabel timeLabel;
     private JLabel fruitsLabel;
     private Timer gameTimer;
-    private GameState gameState;
+    private Timer timeTimer; // Timer separado para el tiempo
     
     /**
      * Creates the game screen with all UI elements.
@@ -32,9 +32,8 @@ public class PantallaJuego extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
         
-        // Crear el juego
-        game = new Game();
-        gameState = new GameState(nivel, game.getFruits().size());
+        // Crear el juego (Game ya crea su propio GameState internamente)
+        game = new Game(nivel); // ✅ Pasar el nivel al constructor
         
         // Panel superior con información del juego
         JPanel infoPanel = createInfoPanel();
@@ -53,6 +52,9 @@ public class PantallaJuego extends JPanel {
         
         // Iniciar el timer del juego
         startGameTimer();
+        
+        // Actualizar la información inicial
+        updateGameInfo();
         
         // Dar foco al panel del tablero para recibir eventos de teclado
         boardPanel.requestFocusInWindow();
@@ -74,7 +76,7 @@ public class PantallaJuego extends JPanel {
         timeLabel.setForeground(Color.WHITE);
         timeLabel.setFont(new Font("Arial", Font.BOLD, 18));
         
-        fruitsLabel = new JLabel("Frutas: 0/3");
+        fruitsLabel = new JLabel("Frutas: 0/0");
         fruitsLabel.setForeground(Color.WHITE);
         fruitsLabel.setFont(new Font("Arial", Font.BOLD, 18));
         
@@ -103,7 +105,7 @@ public class PantallaJuego extends JPanel {
                 JOptionPane.YES_NO_OPTION);
             
             if (confirm == JOptionPane.YES_OPTION) {
-                stopGameTimer();
+                stopGameTimers();
                 ventana.mostrarMenuPrincipal();
             }
         });
@@ -138,6 +140,7 @@ public class PantallaJuego extends JPanel {
         actionMap.put("moveUp", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 game.movePlayer(0, -1);
+                boardPanel.refresh();
                 updateGameInfo();
             }
         });
@@ -145,6 +148,7 @@ public class PantallaJuego extends JPanel {
         actionMap.put("moveDown", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 game.movePlayer(0, 1);
+                boardPanel.refresh();
                 updateGameInfo();
             }
         });
@@ -152,6 +156,7 @@ public class PantallaJuego extends JPanel {
         actionMap.put("moveLeft", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 game.movePlayer(-1, 0);
+                boardPanel.refresh();
                 updateGameInfo();
             }
         });
@@ -159,6 +164,7 @@ public class PantallaJuego extends JPanel {
         actionMap.put("moveRight", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 game.movePlayer(1, 0);
+                boardPanel.refresh();
                 updateGameInfo();
             }
         });
@@ -197,6 +203,7 @@ public class PantallaJuego extends JPanel {
      * Starts the main game timer.
      */
     private void startGameTimer() {
+        // Timer para actualizar enemigos (cada 100ms = 10 veces por segundo)
         gameTimer = new Timer(100, e -> {
             // Actualizar enemigos
             game.updateEnemies();
@@ -210,11 +217,11 @@ public class PantallaJuego extends JPanel {
         gameTimer.start();
         
         // Timer separado para el contador de tiempo (cada segundo)
-        Timer timeTimer = new Timer(1000, e -> {
-            gameState.decrementTime();
+        timeTimer = new Timer(1000, e -> {
+            game.getGameState().decrementTime(); // ✅ Usar el GameState del Game
             updateGameInfo();
             
-            if (gameState.isTimeUp()) {
+            if (game.getGameState().isTimeUp()) {
                 gameOver("¡Se acabó el tiempo!");
             }
         });
@@ -222,11 +229,14 @@ public class PantallaJuego extends JPanel {
     }
     
     /**
-     * Stops the game timer.
+     * Stops all game timers.
      */
-    private void stopGameTimer() {
-        if (gameTimer != null) {
+    private void stopGameTimers() {
+        if (gameTimer != null && gameTimer.isRunning()) {
             gameTimer.stop();
+        }
+        if (timeTimer != null && timeTimer.isRunning()) {
+            timeTimer.stop();
         }
     }
     
@@ -236,8 +246,11 @@ public class PantallaJuego extends JPanel {
     private void pauseGame() {
         if (gameTimer.isRunning()) {
             gameTimer.stop();
-            JOptionPane.showMessageDialog(this, "Juego pausado");
+            timeTimer.stop();
+            JOptionPane.showMessageDialog(this, "Juego pausado. Presiona OK para continuar.");
             gameTimer.start();
+            timeTimer.start();
+            boardPanel.requestFocusInWindow(); // Devolver el foco al tablero
         }
     }
     
@@ -245,10 +258,11 @@ public class PantallaJuego extends JPanel {
      * Updates the displayed game information.
      */
     private void updateGameInfo() {
-        scoreLabel.setText("Puntos: " + gameState.getScore());
-        timeLabel.setText("Tiempo: " + gameState.getFormattedTime());
-        fruitsLabel.setText("Frutas: " + gameState.getFruitsCollected() + 
-                           "/" + gameState.getTotalFruits());
+        GameState state = game.getGameState(); // ✅ Obtener el GameState del Game
+        scoreLabel.setText("Puntos: " + state.getScore());
+        timeLabel.setText("Tiempo: " + state.getFormattedTime());
+        fruitsLabel.setText("Frutas: " + state.getFruitsCollected() + 
+                           "/" + state.getTotalFruits());
     }
     
     /**
@@ -266,21 +280,41 @@ public class PantallaJuego extends JPanel {
      * Handles game over scenario.
      */
     private void gameOver(String message) {
-        stopGameTimer();
+        stopGameTimers();
+        int score = game.getGameState().getScore();
         JOptionPane.showMessageDialog(this, 
-            message + "\nPuntuación final: " + gameState.getScore(),
+            message + "\nPuntuación final: " + score,
             "Game Over",
             JOptionPane.ERROR_MESSAGE);
+        // Opcional: volver al menú principal automáticamente
+        // ((VentanaPrincipal) SwingUtilities.getWindowAncestor(this)).mostrarMenuPrincipal();
     }
     
     /**
      * Handles victory scenario.
      */
     private void victory() {
-        stopGameTimer();
-        JOptionPane.showMessageDialog(this,
-            "¡Nivel completado!\nPuntuación: " + gameState.getScore(),
+        stopGameTimers();
+        int score = game.getGameState().getScore();
+        int nextLevel = game.getCurrentLevel() + 1;
+        
+        int option = JOptionPane.showOptionDialog(this,
+            "¡Nivel completado!\nPuntuación: " + score,
             "¡Victoria!",
-            JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            new String[]{"Siguiente Nivel", "Menú Principal"},
+            "Siguiente Nivel");
+        
+        if (option == 0 && nextLevel <= 3) {
+            // Avanzar al siguiente nivel
+            VentanaPrincipal ventana = (VentanaPrincipal) SwingUtilities.getWindowAncestor(this);
+            ventana.iniciarJuego(nextLevel, "Vainilla", "Player");
+        } else {
+            // Volver al menú principal
+            VentanaPrincipal ventana = (VentanaPrincipal) SwingUtilities.getWindowAncestor(this);
+            ventana.mostrarMenuPrincipal();
+        }
     }
 }
