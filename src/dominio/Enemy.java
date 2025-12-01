@@ -1,58 +1,71 @@
 package dominio;
 
 /**
- * Represents an enemy that moves automatically.
+ * Abstract base class for all enemies.
+ * Each enemy type has different movement and behavior patterns.
+ * 
+ * @authors Alejandra Beltran - Adrian Ducuara
  */
-public class Enemy extends Character {
-
-    private int dirR = 0;
-    private int dirC = 1;
-
+public abstract class Enemy extends Character {
+    
+    protected int directionRow;
+    protected int directionColumn;
+    
     /**
-     * Creates a new enemy at the given position.
-     *
+     * Creates a new enemy at the specified position.
+     * 
      * @param row initial row
      * @param column initial column
      */
     public Enemy(int row, int column) {
         super(row, column);
+        this.directionRow = 0;
+        this.directionColumn = 1; // Empieza moviéndose a la derecha
     }
-
+    
     /**
-     * Computes the movement in rows to get closer to the player.
-     *
-     * @param player reference to the player
-     * @return -1, 0, or 1 depending on vertical direction
+     * Updates enemy position and behavior each game tick.
+     * Each enemy type implements its own movement logic.
+     * 
+     * @param game reference to the game for collision checks
      */
-    public int computeMoveX(Player player) {
-        if (player.getRow() > this.row) return 1;
-        if (player.getRow() < this.row) return -1;
-        return 0;
-    }
-
+    public abstract void update(Game game);
+    
     /**
-     * Computes the movement in columns to get closer to the player.
-     *
-     * @param player reference to the player
-     * @return -1, 0, or 1 depending on horizontal direction
-     */
-    public int computeMoveY(Player player) {
-        if (player.getColumn() > this.column) return 1;
-        if (player.getColumn() < this.column) return -1;
-        return 0;
-    }
-
-    /**
-     * Reverses the enemy's direction of movement.
+     * Reverses the enemy's current direction.
      */
     public void reverseDirection() {
-        dirR = -dirR;
-        dirC = -dirC;
+        directionRow = -directionRow;
+        directionColumn = -directionColumn;
     }
-
-    /** @return direction row of the enemy */
-    public int getDirectionRow() { return dirR; }
-
-    /** @return direction column of the enemy */
-    public int getDirectionColumn() { return dirC; }
+    
+    /**
+     * @return current direction in rows (-1, 0, or 1)
+     */
+    public int getDirectionRow() {
+        return directionRow;
+    }
+    
+    /**
+     * @return current direction in columns (-1, 0, or 1)
+     */
+    public int getDirectionColumn() {
+        return directionColumn;
+    }
+    
+    /**
+     * Sets a new direction for the enemy.
+     * 
+     * @param dr direction row
+     * @param dc direction column
+     */
+    protected void setDirection(int dr, int dc) {
+        this.directionRow = dr;
+        this.directionColumn = dc;
+    }
+    
+    /**
+     * @return string identifier for the enemy type
+     */
+    public abstract String getType();
 }
