@@ -1,4 +1,4 @@
-package domain;
+package dominio;
 
 import java.util.ArrayList;
 
@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Represents the main game logic for the Bad Ice Cream–style game.
  * It manages the board, the player, enemies, fruits, and ice blocks.
  */
-public class Game {
+public class Aplicacion {
 
     private int rows;
     private int columns;
@@ -24,7 +24,7 @@ public class Game {
      * @param rows    number of board rows
      * @param columns number of board columns
      */
-    public Game(int rows, int columns) {
+    public Aplicacion(int rows, int columns) {
         this.rows = rows;
         this.columns = columns;
 

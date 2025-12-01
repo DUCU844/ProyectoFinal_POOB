@@ -1,4 +1,4 @@
-package Dominio;
+package dominio;
 
 /**
  * Represents a collectible fruit.

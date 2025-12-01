@@ -1,4 +1,4 @@
-package Dominio;
+package dominio;
 
 /**
  * Represents a single cell on the game board.

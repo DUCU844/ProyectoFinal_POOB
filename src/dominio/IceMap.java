@@ -1,4 +1,4 @@
-package Dominio;
+package dominio;
 
 /**
  * Represents the game map made of walkable tiles and ice blocks.
