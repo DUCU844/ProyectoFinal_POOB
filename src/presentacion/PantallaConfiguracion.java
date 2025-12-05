@@ -34,7 +34,7 @@ public class PantallaConfiguracion extends JPanel {
         panelCentral.add(jvj);
         panelCentral.add(jvm);
         panelCentral.add(mvm);
-
+        
         // Helado
         panelCentral.add(new JLabel("Selecciona tu helado:", SwingConstants.CENTER));
 

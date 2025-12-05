@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.Random;
 
 /**
+<<<<<<< HEAD
  * Main game logic controller for Bad POOB Cream. Manages the player, enemies,
+=======
+ * Main game logic controller for Bad DOPO Cream. Manages the player, enemies,
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
  * fruits, map, game state, and all game mechanics. This class serves as the
  * core "brain" of the game.
  * 
@@ -88,12 +92,17 @@ public class Game {
 
 		switch (level) {
 		case 1:
+<<<<<<< HEAD
 			// Nivel 1: 2 Trolls básicos (patrón simple)
+=======
+			// Nivel 1: 2 Trolls básicos
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 			enemies.add(new Troll(2, 2));
 			enemies.add(new Troll(map.getHeight() - 3, map.getWidth() - 3));
 			break;
 
 		case 2:
+<<<<<<< HEAD
 			// Nivel 2: 1 Maceta (persigue al jugador)
 			enemies.add(new Pot(map.getHeight() / 2, map.getWidth() / 2));
 			break;
@@ -101,6 +110,20 @@ public class Game {
 		case 3:
 			// Nivel 3: 1 Calamar Naranja (persigue y rompe hielo)
 			enemies.add(new OrangeSquid(map.getHeight() / 2, map.getWidth() / 2));
+=======
+			// Nivel 2: 3 enemigos (2 Trolls + 1 más complejo cuando lo implementen)
+			enemies.add(new Troll(2, 2));
+			enemies.add(new Troll(map.getHeight() - 3, map.getWidth() - 3));
+			enemies.add(new Troll(map.getHeight() / 2, 2));
+			break;
+
+		case 3:
+			// Nivel 3: 4 enemigos
+			enemies.add(new Troll(2, 2));
+			enemies.add(new Troll(map.getHeight() - 3, map.getWidth() - 3));
+			enemies.add(new Troll(2, map.getWidth() - 3));
+			enemies.add(new Troll(map.getHeight() - 3, 2));
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 			break;
 
 		default:
@@ -125,6 +148,7 @@ public class Game {
 
 		switch (level) {
 		case 1:
+<<<<<<< HEAD
 			// Nivel 1: 8 Uvas + 8 Plátanos (16 frutas estáticas)
 			addGrapesInPattern(8);
 			addBananasInPattern(8);
@@ -144,11 +168,44 @@ public class Game {
 
 		default:
 			// Niveles adicionales: mix de frutas
+=======
+			// Nivel 1: 2 Uvas y 1 Plátano
+			fruits.add(new Grape(3, 3));
+			fruits.add(new Grape(map.getHeight() - 4, map.getWidth() - 4));
+			fruits.add(new Banana(map.getHeight() / 2, map.getWidth() - 4));
+			break;
+
+		case 2:
+			// Nivel 2: 3 Uvas y 2 Plátanos
+			fruits.add(new Grape(2, map.getWidth() / 2));
+			fruits.add(new Grape(map.getHeight() - 3, map.getWidth() / 2));
+			fruits.add(new Grape(map.getHeight() / 2, 2));
+			fruits.add(new Banana(3, 3));
+			fruits.add(new Banana(map.getHeight() - 4, map.getWidth() - 4));
+			break;
+
+		case 3:
+			// Nivel 3: Mix de frutas
+			fruits.add(new Grape(2, 2));
+			fruits.add(new Grape(2, map.getWidth() - 3));
+			fruits.add(new Grape(map.getHeight() - 3, 2));
+			fruits.add(new Banana(map.getHeight() / 2, map.getWidth() / 2));
+			fruits.add(new Banana(3, map.getWidth() / 2));
+			fruits.add(new Banana(map.getHeight() - 4, map.getWidth() / 2));
+			break;
+
+		default:
+			// Niveles adicionales: generar aleatoriamente
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 			int fruitCount = 3 + (level * 2);
 			for (int i = 0; i < fruitCount; i++) {
 				int row = random.nextInt(map.getHeight() - 4) + 2;
 				int col = random.nextInt(map.getWidth() - 4) + 2;
 
+<<<<<<< HEAD
+=======
+				// Alternar entre Uvas y Plátanos
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 				if (i % 2 == 0) {
 					fruits.add(new Grape(row, col));
 				} else {
@@ -157,6 +214,7 @@ public class Game {
 			}
 		}
 	}
+<<<<<<< HEAD
 	
 	/**
 	 * Adds grapes in a distributed pattern across the map.
@@ -213,6 +271,8 @@ public class Game {
 			fruits.add(new Cherry(row, col));
 		}
 	}
+=======
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 
 	/**
 	 * Moves the player in the specified direction. Handles collision detection,
@@ -340,8 +400,12 @@ public class Game {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Updates all fruits' special behaviors. Some fruits like Cherry can teleport
 	 * and Pineapple can move.
+=======
+	 * Updates all fruits' special behaviors. Some fruits like Cherry can teleport.
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 	 */
 	public void updateFruits() {
 		if (gameOver || gameWon)
@@ -350,6 +414,7 @@ public class Game {
 		for (Fruit fruit : fruits) {
 			if (!fruit.isCollected()) {
 				fruit.update();
+<<<<<<< HEAD
 				
 				// Manejar teletransporte de cerezas
 				if (fruit instanceof Cherry) {
@@ -399,6 +464,11 @@ public class Game {
 			pineapple.reverseDirection();
 		}
 	}
+=======
+			}
+		}
+	}
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 
 	/**
 	 * Checks if the player is touching any fruit and collects it. Updates score and
@@ -554,6 +624,7 @@ public class Game {
 	public void setGameWon(boolean gameWon) {
 		this.gameWon = gameWon;
 	}
+<<<<<<< HEAD
 	
 	/**
 	 * Sets the player position (used when loading saved games).
@@ -589,4 +660,6 @@ public class Game {
 	public void setGameState(GameState gameState) {
 		this.gameState = gameState;
 	}
+=======
+>>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 }

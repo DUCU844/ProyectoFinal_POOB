@@ -1,4 +1,4 @@
-package Dominio;
+package dominio;
 
 /**
  * Represents an ice block placed or destroyed by the player.
