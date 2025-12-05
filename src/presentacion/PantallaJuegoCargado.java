@@ -7,11 +7,12 @@ import java.awt.*;
 import java.awt.event.*;
 
 /**
- * Main game screen that combines the board, controls, and info display.
+ * Game screen for loaded saved games.
+ * Similar to PantallaJuego but receives a pre-loaded Game object.
  * 
  * @authors Alejandra Beltran - Adrian Ducuara
  */
-public class PantallaJuego extends JPanel {
+public class PantallaJuegoCargado extends JPanel {
     
     private Game game;
     private BoardPanel boardPanel;
@@ -20,22 +21,19 @@ public class PantallaJuego extends JPanel {
     private JLabel fruitsLabel;
     private JLabel levelLabel;
     private Timer gameTimer;
-    private Timer timeTimer; // Timer separado para el tiempo
+    private Timer timeTimer;
     
     /**
-     * Creates the game screen with all UI elements.
+     * Creates game screen from a loaded game.
      * 
      * @param ventana reference to main window
-     * @param nivel level number
-     * @param helado ice cream flavor
-     * @param modalidad game mode
+     * @param loadedGame the loaded game instance
      */
-    public PantallaJuego(VentanaPrincipal ventana, int nivel, String helado, String modalidad) {
+    public PantallaJuegoCargado(VentanaPrincipal ventana, Game loadedGame) {
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
         
-        // Crear el juego (Game ya crea su propio GameState internamente)
-        game = new Game(nivel);
+        this.game = loadedGame;
         
         // Panel superior con información del juego
         JPanel infoPanel = createInfoPanel();
@@ -58,13 +56,10 @@ public class PantallaJuego extends JPanel {
         // Actualizar la información inicial
         updateGameInfo();
         
-        // Dar foco al panel del tablero para recibir eventos de teclado
+        // Dar foco al panel del tablero
         boardPanel.requestFocusInWindow();
     }
     
-    /**
-     * Creates the top info panel with score, time, and fruits.
-     */
     private JPanel createInfoPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(30, 30, 30));
@@ -94,20 +89,16 @@ public class PantallaJuego extends JPanel {
         return panel;
     }
     
-    /**
-     * Creates the bottom control panel with buttons.
-     */
     private JPanel createControlPanel(VentanaPrincipal ventana) {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(30, 30, 30));
         
         JButton pauseButton = new JButton("Pausar");
         JButton saveButton = new JButton("Guardar");
-        JButton menuButton = new JButton("Menú Principal");
+        JButton menuButton = new JButton("Menú");
         
         pauseButton.addActionListener(e -> pauseGame());
         
-        // Botón para guardar partida
         saveButton.addActionListener(e -> {
             String fileName = JOptionPane.showInputDialog(this,
                 "Nombre de la partida guardada:",
@@ -118,12 +109,12 @@ public class PantallaJuego extends JPanel {
                 try {
                     GameSaver.saveGame(game, fileName.trim());
                     JOptionPane.showMessageDialog(this,
-                        "¡Partida guardada exitosamente!",
+                        "Partida guardada exitosamente!",
                         "Éxito",
                         JOptionPane.INFORMATION_MESSAGE);
                 } catch (POOBException ex) {
                     JOptionPane.showMessageDialog(this,
-                        "Error al guardar la partida:\n" + ex.getMessage(),
+                        "Error al guardar:\n" + ex.getMessage(),
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 }
@@ -133,7 +124,7 @@ public class PantallaJuego extends JPanel {
         
         menuButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
-                "¿Seguro que quieres salir? Se perderá el progreso no guardado.",
+                "¿Salir sin guardar?",
                 "Confirmar",
                 JOptionPane.YES_NO_OPTION);
             
@@ -152,27 +143,20 @@ public class PantallaJuego extends JPanel {
         return panel;
     }
     
-    /**
-     * Sets up keyboard controls for the game.
-     */
     private void setupKeyBindings() {
-        // Obtener el InputMap y ActionMap del boardPanel
         InputMap inputMap = boardPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = boardPanel.getActionMap();
         
-        // Movimiento con flechas
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "moveUp");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "moveDown");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "moveLeft");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "moveRight");
         
-        // Disparar hielo con WASD
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), "shootUp");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), "shootDown");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), "shootLeft");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), "shootRight");
         
-        // Acciones de movimiento
         actionMap.put("moveUp", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 game.movePlayer(0, -1);
@@ -205,7 +189,6 @@ public class PantallaJuego extends JPanel {
             }
         });
         
-        // Acciones de disparar hielo
         actionMap.put("shootUp", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 game.playerShootIce(0, -1);
@@ -235,27 +218,15 @@ public class PantallaJuego extends JPanel {
         });
     }
     
-    /**
-     * Starts the main game timer.
-     */
     private void startGameTimer() {
-        // Timer para actualizar enemigos y frutas (cada 100ms = 10 veces por segundo)
         gameTimer = new Timer(100, e -> {
-            // Actualizar enemigos
             game.updateEnemies();
-            
-            // Actualizar frutas (piñas se mueven, cerezas se teletransportan)
             game.updateFruits();
-            
-            // Redibujar el tablero
             boardPanel.refresh();
-            
-            // Verificar condiciones de victoria/derrota
             checkGameConditions();
         });
         gameTimer.start();
         
-        // Timer separado para el contador de tiempo (cada segundo)
         timeTimer = new Timer(1000, e -> {
             game.getGameState().decrementTime();
             updateGameInfo();
@@ -267,9 +238,6 @@ public class PantallaJuego extends JPanel {
         timeTimer.start();
     }
     
-    /**
-     * Stops all game timers.
-     */
     private void stopGameTimers() {
         if (gameTimer != null && gameTimer.isRunning()) {
             gameTimer.stop();
@@ -279,9 +247,6 @@ public class PantallaJuego extends JPanel {
         }
     }
     
-    /**
-     * Pauses or resumes the game.
-     */
     private void pauseGame() {
         if (gameTimer.isRunning()) {
             gameTimer.stop();
@@ -289,13 +254,10 @@ public class PantallaJuego extends JPanel {
             JOptionPane.showMessageDialog(this, "Juego pausado. Presiona OK para continuar.");
             gameTimer.start();
             timeTimer.start();
-            boardPanel.requestFocusInWindow(); // Devolver el foco al tablero
+            boardPanel.requestFocusInWindow();
         }
     }
     
-    /**
-     * Updates the displayed game information.
-     */
     private void updateGameInfo() {
         GameState state = game.getGameState();
         levelLabel.setText("Nivel: " + game.getCurrentLevel());
@@ -305,9 +267,6 @@ public class PantallaJuego extends JPanel {
                            "/" + state.getTotalFruits());
     }
     
-    /**
-     * Checks for win/lose conditions.
-     */
     private void checkGameConditions() {
         if (game.isGameOver()) {
             gameOver("¡Te atrapó un enemigo!");
@@ -316,9 +275,6 @@ public class PantallaJuego extends JPanel {
         }
     }
     
-    /**
-     * Handles game over scenario.
-     */
     private void gameOver(String message) {
         stopGameTimers();
         int score = game.getGameState().getScore();
@@ -326,13 +282,8 @@ public class PantallaJuego extends JPanel {
             message + "\nPuntuación final: " + score,
             "Game Over",
             JOptionPane.ERROR_MESSAGE);
-        // Opcional: volver al menú principal automáticamente
-        // ((VentanaPrincipal) SwingUtilities.getWindowAncestor(this)).mostrarMenuPrincipal();
     }
     
-    /**
-     * Handles victory scenario.
-     */
     private void victory() {
         stopGameTimers();
         int score = game.getGameState().getScore();
@@ -348,20 +299,11 @@ public class PantallaJuego extends JPanel {
             "Siguiente Nivel");
         
         if (option == 0 && nextLevel <= 3) {
-            // Avanzar al siguiente nivel
             VentanaPrincipal ventana = (VentanaPrincipal) SwingUtilities.getWindowAncestor(this);
             ventana.iniciarJuego(nextLevel, "Vainilla", "Player");
         } else {
-            // Volver al menú principal
             VentanaPrincipal ventana = (VentanaPrincipal) SwingUtilities.getWindowAncestor(this);
             ventana.mostrarMenuPrincipal();
         }
-    }
-    
-    /**
-     * Gets the current game instance (for saving).
-     */
-    public Game getGame() {
-        return game;
     }
 }
