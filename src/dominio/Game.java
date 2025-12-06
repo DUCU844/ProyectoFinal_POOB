@@ -7,11 +7,13 @@ import java.util.*;
  * fruits, map, game state, and all game mechanics. This class serves as the
  * core "brain" of the game.
  * 
+ * Now supports single player and two player modes.
+ * 
  * @authors Alejandra Beltran - Adrian Ducuara
  */
 public class Game {
 
-	private Player player;
+	private List<Player> players; // Varios jugadores
 	private List<Enemy> enemies;
 	private List<Fruit> fruits;
 	private IceMap map;
@@ -21,6 +23,7 @@ public class Game {
 	private boolean gameOver;
 	private boolean gameWon;
 	private int currentLevel;
+	private boolean twoPlayerMode; // Activa modo 2 jugadores
 
 	// Constantes para el tamaño del mapa
 	private static final int DEFAULT_WIDTH = 20;
@@ -31,34 +34,51 @@ public class Game {
 	 * player, enemies, and fruits for level 1.
 	 */
 	public Game() {
-		this(1); // Por defecto inicia en nivel 1
+		this(1, false, "Vainilla", "Fresa"); // Por defecto inicia en nivel 1
 	}
 
 	/**
-	 * Creates a new Game instance for a specific level.
+	 * Creates a new Game instance for a specific level (1 player).
 	 * 
 	 * @param level the level number to initialize
 	 */
 	public Game(int level) {
+		this(level, false, "Vainilla", "Fresa");
+	}
+
+	/**
+	 * Creates a new Game with full configuration.
+	 * 
+	 * @param level         level number
+	 * @param twoPlayerMode true for 2 players, false for 1 player
+	 * @param flavor1       flavor for player 1
+	 * @param flavor2       flavor for player 2 (ignored if twoPlayerMode is false)
+	 */
+	public Game(int level, boolean twoPlayerMode, String flavor1, String flavor2) {
 		this.currentLevel = level;
+		this.twoPlayerMode = twoPlayerMode;
 		this.map = new IceMap(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+		this.players = new ArrayList<>();
 		this.enemies = new ArrayList<>();
 		this.fruits = new ArrayList<>();
 		this.random = new Random();
 		this.gameOver = false;
 		this.gameWon = false;
 
-		initializeLevel(level);
+		initializeLevel(level, twoPlayerMode, flavor1, flavor2);
 	}
 
 	/**
 	 * Initializes all elements for a specific level. Creates player, enemies, and
 	 * fruits based on level configuration.
 	 * 
-	 * @param level level number
+	 * @param level         level number
+	 * @param twoPlayerMode whether it's 2 player mode
+	 * @param flavor1       player 1 flavor
+	 * @param flavor2       player 2 flavor
 	 */
-	private void initializeLevel(int level) {
-		initPlayer();
+	private void initializeLevel(int level, boolean twoPlayerMode, String flavor1, String flavor2) {
+		initPlayers(twoPlayerMode, flavor1, flavor2);
 		initEnemiesForLevel(level);
 		initFruitsForLevel(level);
 
@@ -67,12 +87,27 @@ public class Game {
 	}
 
 	/**
-	 * Initializes the player at the center of the map.
+	 * Initializes the players based on game mode.
 	 */
-	private void initPlayer() {
-		int startX = map.getWidth() / 2;
-		int startY = map.getHeight() / 2;
-		this.player = new Player(startY, startX);
+	private void initPlayers(boolean twoPlayerMode, String flavor1, String flavor2) {
+		players.clear();
+
+		if (twoPlayerMode) {
+			// Jugador 1: lado izquierdo
+			int startX1 = map.getWidth() / 4;
+			int startY1 = map.getHeight() / 2;
+			players.add(new Player(startY1, startX1, flavor1, 1));
+
+			// Jugador 2: lado derecho
+			int startX2 = (map.getWidth() * 3) / 4;
+			int startY2 = map.getHeight() / 2;
+			players.add(new Player(startY2, startX2, flavor2, 2));
+		} else {
+			// Un solo jugador en el centro
+			int startX = map.getWidth() / 2;
+			int startY = map.getHeight() / 2;
+			players.add(new Player(startY, startX, flavor1, 1));
+		}
 	}
 
 	/**
@@ -217,13 +252,17 @@ public class Game {
 	 * Moves the player in the specified direction. Handles collision detection,
 	 * fruit collection, and enemy encounters.
 	 * 
-	 * @param dx movement in x direction (-1 left, 1 right, 0 none)
-	 * @param dy movement in y direction (-1 up, 1 down, 0 none)
+	 * @param playerIndex index of the player (0 o 1)
+	 * @param dx          movement in x direction (-1 left, 1 right, 0 none)
+	 * @param dy          movement in y direction (-1 up, 1 down, 0 none)
 	 */
-	public void movePlayer(int dx, int dy) {
+	public void movePlayer(int playerIndex, int dx, int dy) {
 		if (gameOver || gameWon)
 			return;
+		if (playerIndex >= players.size()) 
+			return;
 
+		Player player = players.get(playerIndex);
 		int newX = player.getColumn() + dx;
 		int newY = player.getRow() + dy;
 
@@ -231,37 +270,52 @@ public class Game {
 		if (!map.isWalkable(newX, newY)) {
 			return; // Bloqueado por hielo o fuera del mapa
 		}
-
-		// Mover al jugador
-		player.moveTo(newY, newX);
-
-		// Verificar colisión con frutas
-		checkFruitCollision();
-
-		// Verificar colisión con enemigos
-		checkEnemyCollision();
+		
+		player.updateDirection(dx, dy); // Actualizar dirección basándose en el movimiento
+		player.moveTo(newY, newX); // Mover al jugador
+		checkFruitCollision(player); // Verificar colisión con frutas
+		checkEnemyCollision(); // Verificar colisión con enemigos
 	}
 
 	/**
 	 * Allows the player to create or destroy ice blocks in a direction. Creates a
 	 * line of ice blocks or destroys them in domino effect.
 	 * 
+	 * @param playerIndex index of the player
+	 * @param dx          direction x (-1 left, 1 right, 0 none)
+	 * @param dy          direction y (-1 up, 1 down, 0 none)
+	 */
+	public void playerShootIce(int playerIndex) {
+		if (gameOver || gameWon)
+			return;
+		if (playerIndex >= players.size())
+			return;
+
+		Player player = players.get(playerIndex);
+		int dx = player.getLastDirectionX();
+		int dy = player.getLastDirectionY();
+
+		playerShootIce(playerIndex, dx, dy);
+	}
+	
+	/**
+	 * Allows a player to create or destroy ice blocks in a specific direction.
+	 * 
+	 * @param playerIndex index of the player
 	 * @param dx direction x (-1 left, 1 right, 0 none)
 	 * @param dy direction y (-1 up, 1 down, 0 none)
 	 */
-	public void playerShootIce(int dx, int dy) {
-		if (gameOver || gameWon)
-			return;
-
+	public void playerShootIce(int playerIndex, int dx, int dy) {
+		if (gameOver || gameWon) return;
+		if (playerIndex >= players.size()) return;
+		
+		Player player = players.get(playerIndex);
 		int startX = player.getColumn() + dx;
 		int startY = player.getRow() + dy;
 
-		// Verificar si hay hielo en la posición inicial
 		if (map.hasIce(startX, startY)) {
-			// Destruir hielo en efecto dominó
 			destroyIceInLine(startX, startY, dx, dy);
 		} else {
-			// Crear línea de hielo
 			createIceInLine(startX, startY, dx, dy);
 		}
 	}
@@ -403,7 +457,7 @@ public class Game {
 	 * Checks if the player is touching any fruit and collects it. Updates score and
 	 * fruit collection counter.
 	 */
-	private void checkFruitCollision() {
+	private void checkFruitCollision(Player player) {
 		for (Fruit fruit : fruits) {
 			if (!fruit.isCollected() && fruit.getRow() == player.getRow() && fruit.getColumn() == player.getColumn()) {
 
@@ -411,7 +465,8 @@ public class Game {
 				fruit.collect();
 
 				// Actualizar estadísticas
-				gameState.addScore(fruit.getPoints());
+				player.addScore(fruit.getPoints()); // Puntaje individual
+				gameState.addScore(fruit.getPoints()); // Puntaje global
 				gameState.collectFruit();
 
 				// Verificar si se completó el nivel
@@ -427,10 +482,12 @@ public class Game {
 	 * detected.
 	 */
 	private void checkEnemyCollision() {
-		for (Enemy enemy : enemies) {
-			if (enemy.getRow() == player.getRow() && enemy.getColumn() == player.getColumn()) {
-				gameOver = true;
-				return;
+		for (Player player : players) {
+			for (Enemy enemy : enemies) {
+				if (enemy.getRow() == player.getRow() && enemy.getColumn() == player.getColumn()) {
+					gameOver = true;
+					return;
+				}
 			}
 		}
 	}
@@ -444,7 +501,8 @@ public class Game {
 		enemies.clear();
 		fruits.clear();
 
-		initializeLevel(currentLevel);
+		initializeLevel(currentLevel, twoPlayerMode, players.get(0).getFlavor(),
+				players.size() > 1 ? players.get(1).getFlavor() : "Fresa");
 	}
 
 	/**
@@ -457,7 +515,8 @@ public class Game {
 		enemies.clear();
 		fruits.clear();
 
-		initializeLevel(currentLevel);
+		initializeLevel(currentLevel, twoPlayerMode, players.get(0).getFlavor(),
+				players.size() > 1 ? players.get(1).getFlavor() : "Fresa");
 	}
 
 	/**
@@ -475,10 +534,24 @@ public class Game {
 	}
 
 	/**
-	 * @return reference to the player
+	 * @return the first player (for backwards compatibility)
 	 */
 	public Player getPlayer() {
-		return player;
+		return players.isEmpty() ? null : players.get(0);
+	}
+
+	/**
+	 * @return reference to the player
+	 */
+	public List<Player> getPlayers() {
+		return players;
+	}
+
+	/**
+	 * @return true if in 2 player mode
+	 */
+	public boolean isTwoPlayerMode() {
+		return twoPlayerMode;
 	}
 
 	/**
@@ -558,7 +631,11 @@ public class Game {
 	 * Sets the player position (used when loading saved games).
 	 */
 	public void setPlayer(Player player) {
-		this.player = player;
+		if (!players.isEmpty()) {
+			players.set(0, player);
+		} else {
+			players.add(player);
+		}
 	}
 
 	/**

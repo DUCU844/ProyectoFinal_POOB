@@ -8,6 +8,11 @@ import java.awt.event.*;
 
 /**
  * Main game screen that combines the board, controls, and info display.
+ * Supports both single player and two player modes.
+ * 
+ * CONTROLES:
+ * Jugador 1: Flechas (movimiento) + ESPACIO (disparar hielo)
+ * Jugador 2: WASD (movimiento) + F (disparar hielo)
  * 
  * @authors Alejandra Beltran - Adrian Ducuara
  */
@@ -19,26 +24,30 @@ public class PantallaJuego extends JPanel {
     private JLabel timeLabel;
     private JLabel fruitsLabel;
     private JLabel levelLabel;
+    private JLabel player1ScoreLabel;
+    private JLabel player2ScoreLabel;
     private Timer gameTimer;
-    private Timer timeTimer; // Timer separado para el tiempo
+    private Timer timeTimer;
     
     /**
      * Creates the game screen with all UI elements.
      * 
      * @param ventana reference to main window
      * @param nivel level number
-     * @param helado ice cream flavor
-     * @param modalidad game mode
+     * @param twoPlayerMode true for 2 players, false for 1 player
+     * @param flavor1 player 1 flavor
+     * @param flavor2 player 2 flavor (ignored if single player)
      */
-    public PantallaJuego(VentanaPrincipal ventana, int nivel, String helado, String modalidad) {
+    public PantallaJuego(VentanaPrincipal ventana, int nivel, boolean twoPlayerMode, 
+                        String flavor1, String flavor2) {
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
         
-        // Crear el juego (Game ya crea su propio GameState internamente)
-        game = new Game(nivel); // ✅ UNA SOLA VEZ
+        // Crear el juego con la configuración especificada
+        game = new Game(nivel, twoPlayerMode, flavor1, flavor2);
         
         // Panel superior con información del juego
-        JPanel infoPanel = createInfoPanel();
+        JPanel infoPanel = createInfoPanel(twoPlayerMode);
         add(infoPanel, BorderLayout.NORTH);
         
         // Panel central con el tablero
@@ -50,7 +59,7 @@ public class PantallaJuego extends JPanel {
         add(controlPanel, BorderLayout.SOUTH);
         
         // Configurar controles de teclado
-        setupKeyBindings();
+        setupKeyBindings(twoPlayerMode);
         
         // Iniciar el timer del juego
         startGameTimer();
@@ -65,16 +74,16 @@ public class PantallaJuego extends JPanel {
     /**
      * Creates the top info panel with score, time, and fruits.
      */
-    private JPanel createInfoPanel() {
+    private JPanel createInfoPanel(boolean twoPlayerMode) {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(30, 30, 30));
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 10));
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
         
         levelLabel = new JLabel("Nivel: 1");
         levelLabel.setForeground(Color.CYAN);
         levelLabel.setFont(new Font("Arial", Font.BOLD, 18));
         
-        scoreLabel = new JLabel("Puntos: 0");
+        scoreLabel = new JLabel("Puntos Totales: 0");
         scoreLabel.setForeground(Color.WHITE);
         scoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
         
@@ -91,6 +100,23 @@ public class PantallaJuego extends JPanel {
         panel.add(timeLabel);
         panel.add(fruitsLabel);
         
+        // Si es modo 2 jugadores, agregar puntajes individuales
+        if (twoPlayerMode) {
+            player1ScoreLabel = new JLabel("J1: 0");
+            player1ScoreLabel.setForeground(new Color(100, 200, 255));
+            player1ScoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            
+            player2ScoreLabel = new JLabel("J2: 0");
+            player2ScoreLabel.setForeground(new Color(255, 150, 150));
+            player2ScoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            
+            panel.add(new JLabel(" | ") {{
+                setForeground(Color.GRAY);
+            }});
+            panel.add(player1ScoreLabel);
+            panel.add(player2ScoreLabel);
+        }
+        
         return panel;
     }
     
@@ -105,10 +131,8 @@ public class PantallaJuego extends JPanel {
         JButton saveButton = new JButton("Guardar");
         JButton menuButton = new JButton("Menú Principal");
 
-        // Pausar juego
         pauseButton.addActionListener(e -> pauseGame());
 
-        // Guardar partida
         saveButton.addActionListener(e -> {
             String fileName = JOptionPane.showInputDialog(this,
                 "Nombre de la partida guardada:",
@@ -132,7 +156,6 @@ public class PantallaJuego extends JPanel {
             }
         });
 
-        // Volver al menú principal
         menuButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
                 "¿Seguro que quieres salir? Se perderá el progreso no guardado.",
@@ -156,108 +179,132 @@ public class PantallaJuego extends JPanel {
     
     /**
      * Sets up keyboard controls for the game.
+     * Jugador 1: Flechas (movimiento) + ESPACIO (disparar)
+     * Jugador 2: WASD (movimiento) + F (disparar)
      */
-    private void setupKeyBindings() {
-        // Obtener el InputMap y ActionMap del boardPanel
+    private void setupKeyBindings(boolean twoPlayerMode) {
         InputMap inputMap = boardPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = boardPanel.getActionMap();
         
+        // JUGADOR 1 
         // Movimiento con flechas
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "moveUp");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "moveDown");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "moveLeft");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "moveRight");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "p1_moveUp");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "p1_moveDown");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "p1_moveLeft");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "p1_moveRight");
         
-        // Disparar hielo con WASD
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), "shootUp");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), "shootDown");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), "shootLeft");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), "shootRight");
+        // Disparar hielo con ESPACIO
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "p1_shootIce");
         
-        // Acciones de movimiento
-        actionMap.put("moveUp", new AbstractAction() {
+        // Acciones de movimiento Jugador 1
+        actionMap.put("p1_moveUp", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(0, -1);
+                game.movePlayer(0, 0, -1);
                 boardPanel.refresh();
                 updateGameInfo();
             }
         });
         
-        actionMap.put("moveDown", new AbstractAction() {
+        actionMap.put("p1_moveDown", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(0, 1);
+                game.movePlayer(0, 0, 1);
                 boardPanel.refresh();
                 updateGameInfo();
             }
         });
         
-        actionMap.put("moveLeft", new AbstractAction() {
+        actionMap.put("p1_moveLeft", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(-1, 0);
+                game.movePlayer(0, -1, 0);
                 boardPanel.refresh();
                 updateGameInfo();
             }
         });
         
-        actionMap.put("moveRight", new AbstractAction() {
+        actionMap.put("p1_moveRight", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(1, 0);
+                game.movePlayer(0, 1, 0);
                 boardPanel.refresh();
                 updateGameInfo();
             }
         });
         
-        // Acciones de disparar hielo
-        actionMap.put("shootUp", new AbstractAction() {
+        // Acción de disparar hielo Jugador 1
+        actionMap.put("p1_shootIce", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(0, -1);
+                game.playerShootIce(0); // Dispara en la última dirección
                 boardPanel.refresh();
             }
         });
         
-        actionMap.put("shootDown", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(0, 1);
-                boardPanel.refresh();
-            }
-        });
-        
-        actionMap.put("shootLeft", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(-1, 0);
-                boardPanel.refresh();
-            }
-        });
-        
-        actionMap.put("shootRight", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(1, 0);
-                boardPanel.refresh();
-            }
-        });
+        // JUGADOR 2 (solo si es modo 2 jugadores)
+        if (twoPlayerMode) {
+            // Movimiento con IJKL
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), "p2_moveUp");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), "p2_moveDown");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), "p2_moveLeft");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), "p2_moveRight");
+            
+            // Disparar hielo con F
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, 0), "p2_shootIce");
+            
+            // Acciones de movimiento Jugador 2
+            actionMap.put("p2_moveUp", new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    game.movePlayer(1, 0, -1);
+                    boardPanel.refresh();
+                    updateGameInfo();
+                }
+            });
+            
+            actionMap.put("p2_moveDown", new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    game.movePlayer(1, 0, 1);
+                    boardPanel.refresh();
+                    updateGameInfo();
+                }
+            });
+            
+            actionMap.put("p2_moveLeft", new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    game.movePlayer(1, -1, 0);
+                    boardPanel.refresh();
+                    updateGameInfo();
+                }
+            });
+            
+            actionMap.put("p2_moveRight", new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    game.movePlayer(1, 1, 0);
+                    boardPanel.refresh();
+                    updateGameInfo();
+                }
+            });
+            
+            // Acción de disparar hielo Jugador 2
+            actionMap.put("p2_shootIce", new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    game.playerShootIce(1); // Dispara en la última dirección
+                    boardPanel.refresh();
+                }
+            });
+        }
     }
     
     /**
      * Starts the main game timer.
      */
     private void startGameTimer() {
-        // Timer para actualizar enemigos y frutas (cada 100ms = 10 veces por segundo)
         gameTimer = new Timer(100, e -> {
-            // Actualizar enemigos
             game.updateEnemies();
-            // Actualizar frutas (piñas se mueven, cerezas se teletransportan)
             game.updateFruits();
-            // Redibujar el tablero
             boardPanel.refresh();
-            
-            // Verificar condiciones de victoria/derrota
             checkGameConditions();
         });
         gameTimer.start();
         
-        // Timer separado para el contador de tiempo (cada segundo)
         timeTimer = new Timer(1000, e -> {
-            game.getGameState().decrementTime(); // ✅ UNA SOLA VEZ
+            game.getGameState().decrementTime();
             updateGameInfo();
             
             if (game.getGameState().isTimeUp()) {
@@ -289,7 +336,7 @@ public class PantallaJuego extends JPanel {
             JOptionPane.showMessageDialog(this, "Juego pausado. Presiona OK para continuar.");
             gameTimer.start();
             timeTimer.start();
-            boardPanel.requestFocusInWindow(); // Devolver el foco al tablero
+            boardPanel.requestFocusInWindow();
         }
     }
     
@@ -297,12 +344,18 @@ public class PantallaJuego extends JPanel {
      * Updates the displayed game information.
      */
     private void updateGameInfo() {
-        GameState state = game.getGameState(); // ✅ Obtener el GameState del Game
+        GameState state = game.getGameState();
         levelLabel.setText("Nivel: " + game.getCurrentLevel());
-        scoreLabel.setText("Puntos: " + state.getScore());
+        scoreLabel.setText("Puntos Totales: " + state.getScore());
         timeLabel.setText("Tiempo: " + state.getFormattedTime());
         fruitsLabel.setText("Frutas: " + state.getFruitsCollected() + 
                            "/" + state.getTotalFruits());
+        
+        // Actualizar puntajes individuales si es modo 2 jugadores
+        if (game.isTwoPlayerMode() && player1ScoreLabel != null && player2ScoreLabel != null) {
+            player1ScoreLabel.setText("J1: " + game.getPlayers().get(0).getScore());
+            player2ScoreLabel.setText("J2: " + game.getPlayers().get(1).getScore());
+        }
     }
     
     /**
@@ -321,11 +374,28 @@ public class PantallaJuego extends JPanel {
      */
     private void gameOver(String message) {
         stopGameTimers();
-        int score = game.getGameState().getScore();
-        JOptionPane.showMessageDialog(this, 
-            message + "\nPuntuación final: " + score,
-            "Game Over",
-            JOptionPane.ERROR_MESSAGE);
+        
+        if (game.isTwoPlayerMode()) {
+            Player p1 = game.getPlayers().get(0);
+            Player p2 = game.getPlayers().get(1);
+            
+            String winner = p1.getScore() > p2.getScore() ? 
+                "¡Jugador 1 gana!" : 
+                (p2.getScore() > p1.getScore() ? "¡Jugador 2 gana!" : "¡Empate!");
+            
+            JOptionPane.showMessageDialog(this, 
+                message + "\n" + winner + 
+                "\nJ1: " + p1.getScore() + " puntos" +
+                "\nJ2: " + p2.getScore() + " puntos",
+                "Game Over",
+                JOptionPane.ERROR_MESSAGE);
+        } else {
+            int score = game.getGameState().getScore();
+            JOptionPane.showMessageDialog(this, 
+                message + "\nPuntuación final: " + score,
+                "Game Over",
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     /**
@@ -333,11 +403,25 @@ public class PantallaJuego extends JPanel {
      */
     private void victory() {
         stopGameTimers();
-        int score = game.getGameState().getScore();
         int nextLevel = game.getCurrentLevel() + 1;
         
+        String message;
+        if (game.isTwoPlayerMode()) {
+            Player p1 = game.getPlayers().get(0);
+            Player p2 = game.getPlayers().get(1);
+            
+            String winner = p1.getScore() > p2.getScore() ? 
+                "¡Jugador 1 va ganando!" : 
+                (p2.getScore() > p1.getScore() ? "¡Jugador 2 va ganando!" : "¡Van empatados!");
+            
+            message = "¡Nivel completado!\n" + winner +
+                     "\nJ1: " + p1.getScore() + " | J2: " + p2.getScore();
+        } else {
+            message = "¡Nivel completado!\nPuntuación: " + game.getGameState().getScore();
+        }
+        
         int option = JOptionPane.showOptionDialog(this,
-            "¡Nivel completado!\nPuntuación: " + score,
+            message,
             "¡Victoria!",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.INFORMATION_MESSAGE,
@@ -346,11 +430,17 @@ public class PantallaJuego extends JPanel {
             "Siguiente Nivel");
         
         if (option == 0 && nextLevel <= 3) {
-            // Avanzar al siguiente nivel
             VentanaPrincipal ventana = (VentanaPrincipal) SwingUtilities.getWindowAncestor(this);
-            ventana.iniciarJuego(nextLevel, "Vainilla", "Player");
+            
+            if (game.isTwoPlayerMode()) {
+                ventana.iniciarJuego(nextLevel, true, 
+                    game.getPlayers().get(0).getFlavor(),
+                    game.getPlayers().get(1).getFlavor());
+            } else {
+                ventana.iniciarJuego(nextLevel, false, 
+                    game.getPlayers().get(0).getFlavor(), "Fresa");
+            }
         } else {
-            // Volver al menú principal
             VentanaPrincipal ventana = (VentanaPrincipal) SwingUtilities.getWindowAncestor(this);
             ventana.mostrarMenuPrincipal();
         }

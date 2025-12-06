@@ -19,6 +19,8 @@ public class VentanaPrincipal extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
+        
+        ImageLoader.preloadImages(); //Precargar imagenes
 
         mostrarMenuPrincipal();
         setVisible(true);
@@ -67,9 +69,20 @@ public class VentanaPrincipal extends JFrame {
 
     /**
      * Starts a new game with the specified parameters.
+     * @param nivel level number (1-3)
+     * @param twoPlayerMode true for 2 players, false for 1 player
+     * @param flavor1 player 1 ice cream flavor
+     * @param flavor2 player 2 ice cream flavor
+     */
+    public void iniciarJuego(int nivel, boolean twoPlayerMode, String flavor1, String flavor2) {
+        cambiarPanel(new PantallaJuego(this, nivel, twoPlayerMode, flavor1, flavor2));
+    }
+    
+    /**
+     * Backwards compatibility method for single player.
      */
     public void iniciarJuego(int nivel, String helado, String modalidad) {
-        cambiarPanel(new PantallaJuego(this, nivel, helado, modalidad));
+        iniciarJuego(nivel, false, helado, "Fresa");
     }
     
     /**
