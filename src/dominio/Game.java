@@ -3,8 +3,6 @@ package dominio;
 import java.util.*;
 
 /**
-<<<<<<< HEAD
- * Main game logic controller for Bad POOB Cream. Manages the player, enemies,
  * Main game logic controller for Bad DOPO Cream. Manages the player, enemies,
  * fruits, map, game state, and all game mechanics. This class serves as the
  * core "brain" of the game.
@@ -88,7 +86,6 @@ public class Game {
 
 		switch (level) {
 		case 1:
-			// Nivel 1: 2 Trolls básicos (patrón simple)
 			// Nivel 1: 2 Trolls básicos
 			enemies.add(new Troll(2, 2));
 			enemies.add(new Troll(map.getHeight() - 3, map.getWidth() - 3));
@@ -102,18 +99,6 @@ public class Game {
 		case 3:
 			// Nivel 3: 1 Calamar Naranja (persigue y rompe hielo)
 			enemies.add(new OrangeSquid(map.getHeight() / 2, map.getWidth() / 2));
-			// Nivel 2: 3 enemigos (2 Trolls + 1 más complejo cuando lo implementen)
-			enemies.add(new Troll(2, 2));
-			enemies.add(new Troll(map.getHeight() - 3, map.getWidth() - 3));
-			enemies.add(new Troll(map.getHeight() / 2, 2));
-			break;
-
-		case 3:
-			// Nivel 3: 4 enemigos
-			enemies.add(new Troll(2, 2));
-			enemies.add(new Troll(map.getHeight() - 3, map.getWidth() - 3));
-			enemies.add(new Troll(2, map.getWidth() - 3));
-			enemies.add(new Troll(map.getHeight() - 3, 2));
 			break;
 
 		default:
@@ -156,33 +141,6 @@ public class Game {
 			break;
 
 		default:
-			// Niveles adicionales: mix de frutas
-			// Nivel 1: 2 Uvas y 1 Plátano
-			fruits.add(new Grape(3, 3));
-			fruits.add(new Grape(map.getHeight() - 4, map.getWidth() - 4));
-			fruits.add(new Banana(map.getHeight() / 2, map.getWidth() - 4));
-			break;
-
-		case 2:
-			// Nivel 2: 3 Uvas y 2 Plátanos
-			fruits.add(new Grape(2, map.getWidth() / 2));
-			fruits.add(new Grape(map.getHeight() - 3, map.getWidth() / 2));
-			fruits.add(new Grape(map.getHeight() / 2, 2));
-			fruits.add(new Banana(3, 3));
-			fruits.add(new Banana(map.getHeight() - 4, map.getWidth() - 4));
-			break;
-
-		case 3:
-			// Nivel 3: Mix de frutas
-			fruits.add(new Grape(2, 2));
-			fruits.add(new Grape(2, map.getWidth() - 3));
-			fruits.add(new Grape(map.getHeight() - 3, 2));
-			fruits.add(new Banana(map.getHeight() / 2, map.getWidth() / 2));
-			fruits.add(new Banana(3, map.getWidth() / 2));
-			fruits.add(new Banana(map.getHeight() - 4, map.getWidth() / 2));
-			break;
-
-		default:
 			// Niveles adicionales: generar aleatoriamente
 			int fruitCount = 3 + (level * 2);
 			for (int i = 0; i < fruitCount; i++) {
@@ -198,63 +156,63 @@ public class Game {
 			}
 		}
 	}
-	
+
 	/**
 	 * Adds grapes in a distributed pattern across the map.
 	 */
 	private void addGrapesInPattern(int count) {
 		int width = map.getWidth();
 		int height = map.getHeight();
-		
+
 		for (int i = 0; i < count; i++) {
 			int row = 2 + (i % 3) * (height - 5) / 3;
 			int col = 2 + (i / 3) * (width - 5) / 3;
 			fruits.add(new Grape(row, col));
 		}
 	}
-	
+
 	/**
 	 * Adds bananas in a distributed pattern across the map.
 	 */
 	private void addBananasInPattern(int count) {
 		int width = map.getWidth();
 		int height = map.getHeight();
-		
+
 		for (int i = 0; i < count; i++) {
 			int row = 3 + (i % 3) * (height - 6) / 3;
 			int col = 3 + (i / 3) * (width - 6) / 3;
 			fruits.add(new Banana(row, col));
 		}
 	}
-	
+
 	/**
 	 * Adds pineapples in a distributed pattern across the map.
 	 */
 	private void addPineapplesInPattern(int count) {
 		int width = map.getWidth();
 		int height = map.getHeight();
-		
+
 		for (int i = 0; i < count; i++) {
 			int row = 2 + (i % 3) * (height - 5) / 3;
 			int col = 2 + (i / 3) * (width - 5) / 3;
 			fruits.add(new Pineapple(row, col));
 		}
 	}
-	
+
 	/**
 	 * Adds cherries in a distributed pattern across the map.
 	 */
 	private void addCherriesInPattern(int count) {
 		int width = map.getWidth();
 		int height = map.getHeight();
-		
+
 		for (int i = 0; i < count; i++) {
 			int row = 3 + (i % 3) * (height - 6) / 3;
 			int col = 3 + (i / 3) * (width - 6) / 3;
 			fruits.add(new Cherry(row, col));
 		}
 	}
-	
+
 	/**
 	 * Moves the player in the specified direction. Handles collision detection,
 	 * fruit collection, and enemy encounters.
@@ -383,7 +341,6 @@ public class Game {
 	/**
 	 * Updates all fruits' special behaviors. Some fruits like Cherry can teleport
 	 * and Pineapple can move.
-	 * Updates all fruits' special behaviors. Some fruits like Cherry can teleport.
 	 */
 	public void updateFruits() {
 		if (gameOver || gameWon)
@@ -392,7 +349,7 @@ public class Game {
 		for (Fruit fruit : fruits) {
 			if (!fruit.isCollected()) {
 				fruit.update();
-				
+
 				// Manejar teletransporte de cerezas
 				if (fruit instanceof Cherry) {
 					Cherry cherry = (Cherry) fruit;
@@ -400,7 +357,7 @@ public class Game {
 						teleportCherry(cherry);
 					}
 				}
-				
+
 				// Manejar movimiento de piñas
 				if (fruit instanceof Pineapple) {
 					movePineapple((Pineapple) fruit);
@@ -408,32 +365,32 @@ public class Game {
 			}
 		}
 	}
-	
+
 	/**
 	 * Teleports a cherry to a random valid position.
 	 */
 	private void teleportCherry(Cherry cherry) {
 		int newRow, newCol;
 		int attempts = 0;
-		
+
 		do {
 			newRow = random.nextInt(map.getHeight() - 4) + 2;
 			newCol = random.nextInt(map.getWidth() - 4) + 2;
 			attempts++;
 		} while (!map.isWalkable(newCol, newRow) && attempts < 50);
-		
+
 		if (map.isWalkable(newCol, newRow)) {
 			cherry.teleportTo(newRow, newCol);
 		}
 	}
-	
+
 	/**
 	 * Moves a pineapple in its current direction.
 	 */
 	private void movePineapple(Pineapple pineapple) {
 		int newRow = pineapple.getRow() + pineapple.getDirectionRow();
 		int newCol = pineapple.getColumn() + pineapple.getDirectionColumn();
-		
+
 		if (map.isWalkable(newCol, newRow)) {
 			pineapple.tryMove(newRow, newCol);
 		} else {
@@ -596,35 +553,35 @@ public class Game {
 	public void setGameWon(boolean gameWon) {
 		this.gameWon = gameWon;
 	}
-	
+
 	/**
 	 * Sets the player position (used when loading saved games).
 	 */
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
-	
+
 	/**
 	 * Sets the enemies list (used when loading saved games).
 	 */
 	public void setEnemies(List<Enemy> enemies) {
 		this.enemies = enemies;
 	}
-	
+
 	/**
 	 * Sets the fruits list (used when loading saved games).
 	 */
 	public void setFruits(List<Fruit> fruits) {
 		this.fruits = fruits;
 	}
-	
+
 	/**
 	 * Sets the map (used when loading saved games).
 	 */
 	public void setMap(IceMap map) {
 		this.map = map;
 	}
-	
+
 	/**
 	 * Sets the game state (used when loading saved games).
 	 */

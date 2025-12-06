@@ -59,7 +59,7 @@ public abstract class Enemy extends Character {
      * @param dr direction row
      * @param dc direction column
      */
-    protected void setDirection(int dr, int dc) {
+    public void setDirection(int dr, int dc) {
         this.directionRow = dr;
         this.directionColumn = dc;
     }

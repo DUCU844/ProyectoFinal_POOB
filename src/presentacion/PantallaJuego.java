@@ -35,8 +35,7 @@ public class PantallaJuego extends JPanel {
         setBackground(Color.BLACK);
         
         // Crear el juego (Game ya crea su propio GameState internamente)
-        game = new Game(nivel);
-        game = new Game(nivel); //  Pasar el nivel al constructor
+        game = new Game(nivel); // ✅ UNA SOLA VEZ
         
         // Panel superior con información del juego
         JPanel infoPanel = createInfoPanel();
@@ -85,7 +84,9 @@ public class PantallaJuego extends JPanel {
         
         fruitsLabel = new JLabel("Frutas: 0/0");
         fruitsLabel.setForeground(Color.WHITE);
-        fruitsLabel.setFont(new Font("Arial", Font.BOLD, 18));        panel.add(levelLabel);
+        fruitsLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        
+        panel.add(levelLabel);
         panel.add(scoreLabel);
         panel.add(timeLabel);
         panel.add(fruitsLabel);
@@ -241,7 +242,6 @@ public class PantallaJuego extends JPanel {
      */
     private void startGameTimer() {
         // Timer para actualizar enemigos y frutas (cada 100ms = 10 veces por segundo)
-        // Timer para actualizar enemigos (cada 100ms = 10 veces por segundo)
         gameTimer = new Timer(100, e -> {
             // Actualizar enemigos
             game.updateEnemies();
@@ -257,8 +257,7 @@ public class PantallaJuego extends JPanel {
         
         // Timer separado para el contador de tiempo (cada segundo)
         timeTimer = new Timer(1000, e -> {
-            game.getGameState().decrementTime();
-            game.getGameState().decrementTime(); // Usar el GameState del Game
+            game.getGameState().decrementTime(); // ✅ UNA SOLA VEZ
             updateGameInfo();
             
             if (game.getGameState().isTimeUp()) {
@@ -298,9 +297,8 @@ public class PantallaJuego extends JPanel {
      * Updates the displayed game information.
      */
     private void updateGameInfo() {
-        GameState state = game.getGameState();
+        GameState state = game.getGameState(); // ✅ Obtener el GameState del Game
         levelLabel.setText("Nivel: " + game.getCurrentLevel());
-        GameState state = game.getGameState(); // Obtener el GameState del Game
         scoreLabel.setText("Puntos: " + state.getScore());
         timeLabel.setText("Tiempo: " + state.getFormattedTime());
         fruitsLabel.setText("Frutas: " + state.getFruitsCollected() + 
@@ -328,8 +326,6 @@ public class PantallaJuego extends JPanel {
             message + "\nPuntuación final: " + score,
             "Game Over",
             JOptionPane.ERROR_MESSAGE);
-        // Opcional: volver al menú principal automáticamente
-        // ((VentanaPrincipal) SwingUtilities.getWindowAncestor(this)).mostrarMenuPrincipal();
     }
     
     /**
