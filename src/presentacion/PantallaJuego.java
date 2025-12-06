@@ -1,10 +1,7 @@
 package presentacion;
 
 import dominio.*;
-<<<<<<< HEAD
 import persistencia.*;
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -21,10 +18,7 @@ public class PantallaJuego extends JPanel {
     private JLabel scoreLabel;
     private JLabel timeLabel;
     private JLabel fruitsLabel;
-<<<<<<< HEAD
     private JLabel levelLabel;
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
     private Timer gameTimer;
     private Timer timeTimer; // Timer separado para el tiempo
     
@@ -41,11 +35,8 @@ public class PantallaJuego extends JPanel {
         setBackground(Color.BLACK);
         
         // Crear el juego (Game ya crea su propio GameState internamente)
-<<<<<<< HEAD
         game = new Game(nivel);
-=======
-        game = new Game(nivel); // ✅ Pasar el nivel al constructor
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
+        game = new Game(nivel); //  Pasar el nivel al constructor
         
         // Panel superior con información del juego
         JPanel infoPanel = createInfoPanel();
@@ -80,13 +71,10 @@ public class PantallaJuego extends JPanel {
         panel.setBackground(new Color(30, 30, 30));
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 10));
         
-<<<<<<< HEAD
         levelLabel = new JLabel("Nivel: 1");
         levelLabel.setForeground(Color.CYAN);
         levelLabel.setFont(new Font("Arial", Font.BOLD, 18));
         
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
         scoreLabel = new JLabel("Puntos: 0");
         scoreLabel.setForeground(Color.WHITE);
         scoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -97,12 +85,7 @@ public class PantallaJuego extends JPanel {
         
         fruitsLabel = new JLabel("Frutas: 0/0");
         fruitsLabel.setForeground(Color.WHITE);
-        fruitsLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        
-<<<<<<< HEAD
-        panel.add(levelLabel);
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
+        fruitsLabel.setFont(new Font("Arial", Font.BOLD, 18));        panel.add(levelLabel);
         panel.add(scoreLabel);
         panel.add(timeLabel);
         panel.add(fruitsLabel);
@@ -116,21 +99,21 @@ public class PantallaJuego extends JPanel {
     private JPanel createControlPanel(VentanaPrincipal ventana) {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(30, 30, 30));
-        
+
         JButton pauseButton = new JButton("Pausar");
-<<<<<<< HEAD
         JButton saveButton = new JButton("Guardar");
         JButton menuButton = new JButton("Menú Principal");
-        
+
+        // Pausar juego
         pauseButton.addActionListener(e -> pauseGame());
-        
-        // Botón para guardar partida
+
+        // Guardar partida
         saveButton.addActionListener(e -> {
             String fileName = JOptionPane.showInputDialog(this,
                 "Nombre de la partida guardada:",
                 "Guardar Partida",
                 JOptionPane.QUESTION_MESSAGE);
-            
+
             if (fileName != null && !fileName.trim().isEmpty()) {
                 try {
                     GameSaver.saveGame(game, fileName.trim());
@@ -147,39 +130,26 @@ public class PantallaJuego extends JPanel {
                 boardPanel.requestFocusInWindow();
             }
         });
-        
+
+        // Volver al menú principal
         menuButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
                 "¿Seguro que quieres salir? Se perderá el progreso no guardado.",
-=======
-        JButton menuButton = new JButton("Menú Principal");
-        
-        pauseButton.addActionListener(e -> pauseGame());
-        menuButton.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                "¿Seguro que quieres salir? Se perderá el progreso.",
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
                 "Confirmar",
                 JOptionPane.YES_NO_OPTION);
-            
+
             if (confirm == JOptionPane.YES_OPTION) {
                 stopGameTimers();
                 ventana.mostrarMenuPrincipal();
-<<<<<<< HEAD
             } else {
                 boardPanel.requestFocusInWindow();
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
             }
         });
-        
+
         panel.add(pauseButton);
-<<<<<<< HEAD
         panel.add(saveButton);
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
         panel.add(menuButton);
-        
+
         return panel;
     }
     
@@ -270,21 +240,13 @@ public class PantallaJuego extends JPanel {
      * Starts the main game timer.
      */
     private void startGameTimer() {
-<<<<<<< HEAD
         // Timer para actualizar enemigos y frutas (cada 100ms = 10 veces por segundo)
-=======
         // Timer para actualizar enemigos (cada 100ms = 10 veces por segundo)
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
         gameTimer = new Timer(100, e -> {
             // Actualizar enemigos
             game.updateEnemies();
-            
-<<<<<<< HEAD
             // Actualizar frutas (piñas se mueven, cerezas se teletransportan)
             game.updateFruits();
-            
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
             // Redibujar el tablero
             boardPanel.refresh();
             
@@ -295,11 +257,8 @@ public class PantallaJuego extends JPanel {
         
         // Timer separado para el contador de tiempo (cada segundo)
         timeTimer = new Timer(1000, e -> {
-<<<<<<< HEAD
             game.getGameState().decrementTime();
-=======
-            game.getGameState().decrementTime(); // ✅ Usar el GameState del Game
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
+            game.getGameState().decrementTime(); // Usar el GameState del Game
             updateGameInfo();
             
             if (game.getGameState().isTimeUp()) {
@@ -339,12 +298,9 @@ public class PantallaJuego extends JPanel {
      * Updates the displayed game information.
      */
     private void updateGameInfo() {
-<<<<<<< HEAD
         GameState state = game.getGameState();
         levelLabel.setText("Nivel: " + game.getCurrentLevel());
-=======
-        GameState state = game.getGameState(); // ✅ Obtener el GameState del Game
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
+        GameState state = game.getGameState(); // Obtener el GameState del Game
         scoreLabel.setText("Puntos: " + state.getScore());
         timeLabel.setText("Tiempo: " + state.getFormattedTime());
         fruitsLabel.setText("Frutas: " + state.getFruitsCollected() + 
@@ -403,7 +359,6 @@ public class PantallaJuego extends JPanel {
             ventana.mostrarMenuPrincipal();
         }
     }
-<<<<<<< HEAD
     
     /**
      * Gets the current game instance (for saving).
@@ -411,6 +366,4 @@ public class PantallaJuego extends JPanel {
     public Game getGame() {
         return game;
     }
-=======
->>>>>>> 5acec501df1ca4ab00cbba591345b28d0ad1938c
 }
