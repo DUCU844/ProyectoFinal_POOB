@@ -152,14 +152,11 @@ public class PantallaJuegoCargado extends JPanel {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "moveLeft");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "moveRight");
         
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), "shootUp");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), "shootDown");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), "shootLeft");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), "shootRight");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "shootIce");
         
         actionMap.put("moveUp", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(0, -1);
+                game.movePlayer(0, 0, -1); // playerIndex, dx, dy
                 boardPanel.refresh();
                 updateGameInfo();
             }
@@ -167,7 +164,7 @@ public class PantallaJuegoCargado extends JPanel {
         
         actionMap.put("moveDown", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(0, 1);
+                game.movePlayer(0, 0, 1);
                 boardPanel.refresh();
                 updateGameInfo();
             }
@@ -175,7 +172,7 @@ public class PantallaJuegoCargado extends JPanel {
         
         actionMap.put("moveLeft", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(-1, 0);
+                game.movePlayer(0, -1, 0);
                 boardPanel.refresh();
                 updateGameInfo();
             }
@@ -183,36 +180,15 @@ public class PantallaJuegoCargado extends JPanel {
         
         actionMap.put("moveRight", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.movePlayer(1, 0);
+                game.movePlayer(0, 1, 0);
                 boardPanel.refresh();
                 updateGameInfo();
             }
         });
         
-        actionMap.put("shootUp", new AbstractAction() {
+        actionMap.put("shootIce", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(0, -1);
-                boardPanel.refresh();
-            }
-        });
-        
-        actionMap.put("shootDown", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(0, 1);
-                boardPanel.refresh();
-            }
-        });
-        
-        actionMap.put("shootLeft", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(-1, 0);
-                boardPanel.refresh();
-            }
-        });
-        
-        actionMap.put("shootRight", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                game.playerShootIce(1, 0);
+                game.playerShootIce(0); // playerIndex = 0
                 boardPanel.refresh();
             }
         });

@@ -17,6 +17,7 @@ public class BoardPanel extends JPanel {
     private Game game;
     private static final int CELL_SIZE = 40; // Tamaño de cada celda en píxeles
     
+    private BufferedImage backgroundImg;
     private BufferedImage vanillaImg, strawberryImg, chocolateImg;
     private BufferedImage grapeImg, bananaImg, cherryImg, pineappleImg;
     private BufferedImage trollImg, potImg, squidImg;
@@ -47,6 +48,13 @@ public class BoardPanel extends JPanel {
      * Loads and scales all game images.
      */
     private void loadImages() {
+    	BufferedImage rawBackground = ImageLoader.loadBackground();
+        if (rawBackground != null) {
+            int width = game.getMap().getWidth() * CELL_SIZE;
+            int height = game.getMap().getHeight() * CELL_SIZE;
+            backgroundImg = ImageLoader.scaleImage(rawBackground, width, height);
+        }
+        
         // Helados
         vanillaImg = ImageLoader.scaleImage(
             ImageLoader.loadImage("vanilla_ice.png"), CELL_SIZE - 10, CELL_SIZE - 10);
@@ -73,7 +81,7 @@ public class BoardPanel extends JPanel {
         squidImg = ImageLoader.scaleImage(
             ImageLoader.loadImage("orange_squid.png"), CELL_SIZE - 10, CELL_SIZE - 10);
         
-        // Obstáculos
+        // Obstaculos
         iceBlockImg = ImageLoader.scaleImage(
             ImageLoader.loadImage("ice_block.png"), CELL_SIZE, CELL_SIZE);
     }
@@ -91,12 +99,35 @@ public class BoardPanel extends JPanel {
                             RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
                             RenderingHints.VALUE_RENDER_QUALITY);
+        drawBackground(g);
         
         drawMap(g);
         drawFruits(g);
         drawEnemies(g);
-        drawPlayer(g);
+        drawPlayers(g);
         drawGrid(g); // Opcional: dibujar líneas de grid
+    }
+    
+    /**
+     * Draws the background image.
+     */
+    private void drawBackground(Graphics g) {
+        if (backgroundImg != null) {
+            // Dibujar la imagen de fondo escalada
+            g.drawImage(backgroundImg, 0, 0, null);
+        } else {
+            // Si no hay imagen, usar un gradiente de respaldo
+            Graphics2D g2d = (Graphics2D) g;
+            int width = getWidth();
+            int height = getHeight();
+            
+            GradientPaint gradient = new GradientPaint(
+                0, 0, new Color(44, 62, 80),
+                0, height, new Color(52, 73, 94)
+            );
+            g2d.setPaint(gradient);
+            g2d.fillRect(0, 0, width, height);
+        }
     }
     
     /**
@@ -257,7 +288,7 @@ public class BoardPanel extends JPanel {
 	            
 	            // Borde negro
 	            g.setColor(Color.BLACK);
-	            g.setStroke(new BasicStroke(2));
+	            ((Graphics2D)g).setStroke(new BasicStroke(2));
 	            g.drawOval(x, y, CELL_SIZE - 10, CELL_SIZE - 10);
 	            
 	            // Número del jugador en modo 2 jugadores
@@ -275,8 +306,8 @@ public class BoardPanel extends JPanel {
      * Draws grid lines for better visualization (optional).
      */
     private void drawGrid(Graphics g) {
-        g.setColor(new Color(70, 50, 50, 50)); // Gris muy transparente
-        g.setStroke(new BasicStroke(1));
+        g.setColor(new Color(255, 255, 255, 30)); // Blanco muy transparente
+        ((Graphics2D)g).setStroke(new BasicStroke(1));
         
         // Líneas verticales
         for (int x = 0; x <= game.getMap().getWidth(); x++) {
