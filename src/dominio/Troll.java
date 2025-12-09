@@ -4,6 +4,7 @@ package dominio;
  * Troll enemy - moves in straight lines and changes direction
  * when hitting obstacles or map edges.
  * Does not chase the player or break ice blocks.
+ * Speed: Medium(move 300ms) 
  * 
  * @authors Alejandra Beltran - Adrian Ducuara
  */
@@ -17,6 +18,7 @@ public class Troll extends Enemy {
      */
     public Troll(int row, int column) {
         super(row, column);
+        movementSpeed = 3;
     }
     
     /**

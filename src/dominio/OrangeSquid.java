@@ -4,6 +4,7 @@ package dominio;
  * Orange Squid enemy (Calamar Naranja) - chases the player 
  * and can break ice blocks one at a time.
  * Used in Level 3 (hardest enemy).
+ * Speed = Medium-Fast (move 800ms) - Cooldown toggleIce
  * 
  * @authors Alejandra Beltran - Adrian Ducuara
  */
@@ -20,7 +21,8 @@ public class OrangeSquid extends Enemy {
      */
     public OrangeSquid(int row, int column) {
         super(row, column);
-        this.breakCooldown = 0;
+        breakCooldown = 0;
+        movementSpeed = 8;
     }
     
     /**

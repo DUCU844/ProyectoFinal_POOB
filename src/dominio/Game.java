@@ -55,15 +55,15 @@ public class Game {
 	 * @param flavor2       flavor for player 2 (ignored if twoPlayerMode is false)
 	 */
 	public Game(int level, boolean twoPlayerMode, String flavor1, String flavor2) {
-		this.currentLevel = level;
+		currentLevel = level;
 		this.twoPlayerMode = twoPlayerMode;
-		this.map = new IceMap(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-		this.players = new ArrayList<>();
-		this.enemies = new ArrayList<>();
-		this.fruits = new ArrayList<>();
-		this.random = new Random();
-		this.gameOver = false;
-		this.gameWon = false;
+		map = new IceMap(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+		players = new ArrayList<>();
+		enemies = new ArrayList<>();
+		fruits = new ArrayList<>();
+		random = new Random();
+		gameOver = false;
+		gameWon = false;
 
 		initializeLevel(level, twoPlayerMode, flavor1, flavor2);
 	}
@@ -78,12 +78,215 @@ public class Game {
 	 * @param flavor2       player 2 flavor
 	 */
 	private void initializeLevel(int level, boolean twoPlayerMode, String flavor1, String flavor2) {
+		// Limpiar el mapa
+		map.clearObstacles();
+
+		// Crear el diseño único de cada nivel
+		switch (level) {
+		case 1:
+			initLevel1();
+			break;
+		case 2:
+			initLevel2();
+			break;
+		case 3:
+			initLevel3();
+			break;
+		default:
+			initLevel1(); // Fallback
+		}
+
+		// Inicializar jugadores después de crear el mapa
 		initPlayers(twoPlayerMode, flavor1, flavor2);
-		initEnemiesForLevel(level);
-		initFruitsForLevel(level);
 
 		// Crear el GameState con el número total de frutas
 		this.gameState = new GameState(level, fruits.size());
+	}
+
+	/**
+	 * LEVEL 1: "Ice Cave" Theme: Tutorial level with igloos and basic ice
+	 * structures. Enemies: 2 Trolls Fruits: 8 Grapes + 8 Bananas Obstacles: Igloos,
+	 * ice walls
+	 */
+	private void initLevel1() {
+		// Crear estructuras de hielo tipo cuadrícula
+		for (int y = 3; y < 12; y += 4) {
+			for (int x = 3; x < 17; x += 4) {
+				map.toggleIce(x, y);
+				map.toggleIce(x + 1, y);
+				map.toggleIce(x, y + 1);
+				map.toggleIce(x + 1, y + 1);
+			}
+		}
+
+		// Agregar iglús en las esquinas (decoración nivel 1)
+		map.addIgloo(new Igloo(2, 2, 2, 2));
+		map.addIgloo(new Igloo(2, 16, 2, 2));
+
+		// Enemigos: 2 Trolls
+		enemies.add(new Troll(2, 9));
+		enemies.add(new Troll(12, 10));
+
+		// Frutas: 8 Uvas + 8 Plátanos distribuidos
+		addGrapesPattern1();
+		addBananasPattern1();
+	}
+
+	/**
+	 * LEVEL 2: "Volcano Arena" Theme: Lava theme with firepits and hot tiles.
+	 * Enemies: 1 Pot (chases player) Fruits: 4 Pineapples + 4 Bananas + 4 Cherries
+	 * Obstacles: Firepits, hot tiles, ice barriers
+	 */
+	private void initLevel2() {
+		// Crear paredes de hielo tipo laberinto
+		for (int y = 4; y < 11; y++) {
+			map.toggleIce(7, y);
+			map.toggleIce(12, y);
+		}
+
+		for (int x = 4; x < 16; x++) {
+			if (x != 7 && x != 12) {
+				map.toggleIce(x, 7);
+			}
+		}
+
+		// Agregar fogatas en puntos estratégicos
+		map.addFirepit(new Firepit(3, 5));
+		map.addFirepit(new Firepit(3, 14));
+		map.addFirepit(new Firepit(11, 5));
+		map.addFirepit(new Firepit(11, 14));
+
+		// Agregar baldosas calientes en el centro
+		for (int x = 8; x <= 11; x++) {
+			map.addHotTile(new HotTile(7, x));
+		}
+		map.addHotTile(new HotTile(8, 9));
+		map.addHotTile(new HotTile(8, 10));
+
+		// Enemigo: 1 Maceta
+		enemies.add(new Pot(2, 2));
+
+		// Frutas mixtas
+		addPineapplesPattern2();
+		addBananasPattern2();
+		addCherriesPattern2();
+	}
+
+	/**
+	 * LEVEL 3: "Cactus Desert" Theme: Desert with cactus and advanced enemies.
+	 * Enemies: 1 Orange Squid (breaks ice) Fruits: 4 Pineapples + 4 Cactus + 4
+	 * Cherries Obstacles: Hot tiles, scattered ice
+	 */
+	private void initLevel3() {
+		// Crear estructuras de hielo dispersas
+		// Pirámides de hielo
+		map.toggleIce(5, 5);
+		map.toggleIce(5, 6);
+		map.toggleIce(6, 5);
+
+		map.toggleIce(14, 5);
+		map.toggleIce(14, 6);
+		map.toggleIce(13, 5);
+
+		map.toggleIce(5, 9);
+		map.toggleIce(5, 10);
+		map.toggleIce(6, 10);
+
+		map.toggleIce(14, 9);
+		map.toggleIce(14, 10);
+		map.toggleIce(13, 10);
+
+		// Baldosas calientes formando caminos
+		for (int y = 3; y < 12; y++) {
+			map.addHotTile(new HotTile(y, 10));
+		}
+
+		for (int x = 5; x < 15; x++) {
+			if (x != 10) {
+				map.addHotTile(new HotTile(7, x));
+			}
+		}
+
+		// Enemigo: 1 Calamar Naranja
+		enemies.add(new OrangeSquid(20, 20));
+
+		// Frutas especiales del nivel 3
+		addPineapplesPattern3();
+		addCactusPattern3();
+		addCherriesPattern3();
+	}
+
+	/**
+	 * Patterns de frutas para Nivel 1
+	 */
+	private void addGrapesPattern1() {
+		fruits.add(new Grape(5, 5));
+		fruits.add(new Grape(5, 14));
+		fruits.add(new Grape(9, 5));
+		fruits.add(new Grape(9, 14));
+		fruits.add(new Grape(7, 7));
+		fruits.add(new Grape(7, 12));
+		fruits.add(new Grape(11, 7));
+		fruits.add(new Grape(11, 12));
+	}
+
+	private void addBananasPattern1() {
+		fruits.add(new Banana(4, 9));
+		fruits.add(new Banana(6, 9));
+		fruits.add(new Banana(8, 9));
+		fruits.add(new Banana(10, 9));
+		fruits.add(new Banana(5, 7));
+		fruits.add(new Banana(5, 12));
+		fruits.add(new Banana(9, 7));
+		fruits.add(new Banana(9, 12));
+	}
+
+	/**
+	 * Patterns de frutas para Nivel 2
+	 */
+	private void addPineapplesPattern2() {
+		fruits.add(new Pineapple(5, 5));
+		fruits.add(new Pineapple(5, 14));
+		fruits.add(new Pineapple(9, 5));
+		fruits.add(new Pineapple(9, 14));
+	}
+
+	private void addBananasPattern2() {
+		fruits.add(new Banana(5, 9));
+		fruits.add(new Banana(9, 9));
+		fruits.add(new Banana(7, 5));
+		fruits.add(new Banana(7, 14));
+	}
+
+	private void addCherriesPattern2() {
+		fruits.add(new Cherry(4, 10));
+		fruits.add(new Cherry(6, 10));
+		fruits.add(new Cherry(8, 10));
+		fruits.add(new Cherry(10, 10));
+	}
+
+	/**
+	 * Patterns de frutas para Nivel 3
+	 */
+	private void addPineapplesPattern3() {
+		fruits.add(new Pineapple(3, 3));
+		fruits.add(new Pineapple(3, 16));
+		fruits.add(new Pineapple(11, 3));
+		fruits.add(new Pineapple(11, 16));
+	}
+
+	private void addCactusPattern3() {
+		fruits.add(new Cactus(7, 5));
+		fruits.add(new Cactus(7, 15));
+		fruits.add(new Cactus(5, 10));
+		fruits.add(new Cactus(9, 10));
+	}
+
+	private void addCherriesPattern3() {
+		fruits.add(new Cherry(4, 7));
+		fruits.add(new Cherry(4, 13));
+		fruits.add(new Cherry(10, 7));
+		fruits.add(new Cherry(10, 13));
 	}
 
 	/**
@@ -259,7 +462,7 @@ public class Game {
 	public void movePlayer(int playerIndex, int dx, int dy) {
 		if (gameOver || gameWon)
 			return;
-		if (playerIndex >= players.size()) 
+		if (playerIndex >= players.size())
 			return;
 
 		Player player = players.get(playerIndex);
@@ -270,7 +473,7 @@ public class Game {
 		if (!map.isWalkable(newX, newY)) {
 			return; // Bloqueado por hielo o fuera del mapa
 		}
-		
+
 		player.updateDirection(dx, dy); // Actualizar dirección basándose en el movimiento
 		player.moveTo(newY, newX); // Mover al jugador
 		checkFruitCollision(player); // Verificar colisión con frutas
@@ -297,18 +500,20 @@ public class Game {
 
 		playerShootIce(playerIndex, dx, dy);
 	}
-	
+
 	/**
 	 * Allows a player to create or destroy ice blocks in a specific direction.
 	 * 
 	 * @param playerIndex index of the player
-	 * @param dx direction x (-1 left, 1 right, 0 none)
-	 * @param dy direction y (-1 up, 1 down, 0 none)
+	 * @param dx          direction x (-1 left, 1 right, 0 none)
+	 * @param dy          direction y (-1 up, 1 down, 0 none)
 	 */
 	public void playerShootIce(int playerIndex, int dx, int dy) {
-		if (gameOver || gameWon) return;
-		if (playerIndex >= players.size()) return;
-		
+		if (gameOver || gameWon)
+			return;
+		if (playerIndex >= players.size())
+			return;
+
 		Player player = players.get(playerIndex);
 		int startX = player.getColumn() + dx;
 		int startY = player.getRow() + dy;
@@ -333,8 +538,8 @@ public class Game {
 		int x = startX;
 		int y = startY;
 
-		// Crear hasta 5 bloques o hasta encontrar obstáculo
-		for (int i = 0; i < 5; i++) {
+		// Crear hasta encontrar obstáculo
+		for (int i = 0; i < map.getWidth() && i < map.getHeight(); i++) {
 			// Verificar límites del mapa
 			if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight()) {
 				break;
@@ -455,11 +660,19 @@ public class Game {
 
 	/**
 	 * Checks if the player is touching any fruit and collects it. Updates score and
-	 * fruit collection counter.
+	 * fruit collection counter. Now handles cactus with spikes
 	 */
 	private void checkFruitCollision(Player player) {
 		for (Fruit fruit : fruits) {
 			if (!fruit.isCollected() && fruit.getRow() == player.getRow() && fruit.getColumn() == player.getColumn()) {
+
+				if (fruit instanceof Cactus) {
+					Cactus cactus = (Cactus) fruit;
+					if (cactus.hasSpikes()) {
+						gameOver = true;
+						return;
+					}
+				}
 
 				// Recolectar fruta
 				fruit.collect();

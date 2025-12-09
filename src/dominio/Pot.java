@@ -3,6 +3,7 @@ package dominio;
 /**
  * Pot enemy (Maceta) - chases the player but cannot break ice blocks.
  * Used in Level 2.
+ * Speed: move 1500ms 
  * 
  * @authors Alejandra Beltran - Adrian Ducuara
  */
@@ -16,6 +17,7 @@ public class Pot extends Enemy {
      */
     public Pot(int row, int column) {
         super(row, column);
+        movementSpeed = 15;
     }
     
     /**
