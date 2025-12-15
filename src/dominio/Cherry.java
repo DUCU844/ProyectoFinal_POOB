@@ -10,10 +10,10 @@ import java.util.Random;
  */
 public class Cherry extends Fruit {
     
-    private static final int cherry_points = 150;
+    private static final int CHERRY_POINTS = 150;
     private Random random;
     private int tickCounter;
-    private static final int teleport_interval = 50; // Teletransporta cada 50 ticks (~5 segundos)
+    private static final int TELEPORT_INTERVAL = 50; // Teletransporta cada 50 ticks (~5 segundos)
     
     /**
      * Creates a cherry at the specified position.
@@ -22,7 +22,7 @@ public class Cherry extends Fruit {
      * @param column initial column
      */
     public Cherry(int row, int column) {
-        super(row, column, cherry_points);
+        super(row, column, CHERRY_POINTS);
         random = new Random();
         tickCounter = 0;
     }
@@ -32,7 +32,7 @@ public class Cherry extends Fruit {
         tickCounter++;
         
         // Teletransportarse cada cierto tiempo
-        if (tickCounter >= teleport_interval) {
+        if (tickCounter >= TELEPORT_INTERVAL) {
             teleport();
             tickCounter = 0;
         }
@@ -63,7 +63,7 @@ public class Cherry extends Fruit {
      * @return true if cherry should teleport on next update
      */
     public boolean shouldTeleport() {
-        return tickCounter >= teleport_interval;
+        return tickCounter >= TELEPORT_INTERVAL;
     }
     
     @Override
