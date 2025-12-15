@@ -23,8 +23,8 @@ public class Cherry extends Fruit {
      */
     public Cherry(int row, int column) {
         super(row, column, cherry_points);
-        this.random = new Random();
-        this.tickCounter = 0;
+        random = new Random();
+        tickCounter = 0;
     }
     
     @Override

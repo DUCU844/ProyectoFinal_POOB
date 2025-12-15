@@ -33,7 +33,7 @@ public abstract class Enemy extends Character {
 	 * 
 	 * @return true if enough time has passed to move
 	 */
-	protected boolean canMove() {
+	public boolean canMove() {
 		movementCooldown++;
 		if (movementCooldown >= movementSpeed) {
 			movementCooldown = 0; // Reiniciar el contador
